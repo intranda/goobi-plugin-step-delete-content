@@ -1,0 +1,21 @@
+<config_plugin>
+    <config>
+        <project>*</project>
+        <step>*</step>
+        <!-- delete all data within the images/ folder -->
+        <deleteAllContentFromImageFolder>false</deleteAllContentFromImageFolder>
+        <!-- delete all data within the thumbs/ folder -->
+        <deleteAllContentFromThumbsFolder>false</deleteAllContentFromThumbsFolder>
+        <!-- delete all data within the ocr/ folder -->
+        <deleteAllContentFromOcrFolder>false</deleteAllContentFromOcrFolder>
+        
+        <!-- OR delete a single folder - this is only used if deleteAllContentFromImageFolder is set to false -->
+        <deleteMediaFolder>false</deleteMediaFolder>
+        <deleteMasterFolder>false</deleteMasterFolder>
+        <deleteSourceFolder>false</deleteSourceFolder>
+        <deleteFallbackFolder>false</deleteFallbackFolder>
+        
+        <!-- deactivate all unfinished tasks -->
+        <deactivateProcess>false</deactivateProcess>
+    </config>
+</config_plugin>

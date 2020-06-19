@@ -70,7 +70,7 @@ public class ImageDeletionPluginTest {
         EasyMock.expect(configurationHelper.isCreateSourceFolder()).andReturn(false).anyTimes();
         EasyMock.expect(configurationHelper.getMediaDirectorySuffix()).andReturn("media").anyTimes();
         EasyMock.expect(configurationHelper.getMasterDirectoryPrefix()).andReturn("master").anyTimes();
-
+        EasyMock.expect(configurationHelper.getFolderForInternalProcesslogFiles()).andReturn("intern").anyTimes();
         EasyMock.expect(configurationHelper.getMetadataFolder()).andReturn(metadataDirectoryName).anyTimes();
 
         EasyMock.expect(configurationHelper.getScriptCreateDirMeta()).andReturn("").anyTimes();
@@ -208,7 +208,6 @@ public class ImageDeletionPluginTest {
         assertFalse(Files.exists(Paths.get(altoDirectory)));
     }
 
-
     @Test
     public void testDeleteAllImagesDirectory() throws Exception {
         createProcessDirectory(true, true, true);
@@ -239,7 +238,6 @@ public class ImageDeletionPluginTest {
         assertTrue(Files.exists(Paths.get(thumbsDirectory)));
         assertTrue(Files.exists(Paths.get(altoDirectory)));
     }
-
 
     @Test
     public void testDeleteMasterDirectory() throws Exception {
@@ -343,6 +341,70 @@ public class ImageDeletionPluginTest {
 
     }
 
+    @Test
+    public void testDeleteExportImportDirectories() throws Exception {
+        createProcessDirectory(true, true, true);
+
+        File exportDirectory = new File(processDirectory.getAbsolutePath(), "export");
+        exportDirectory.mkdir();
+        File importDirectory = new File(processDirectory.getAbsolutePath(), "import");
+        importDirectory.mkdir();
+        File internalDirectory = new File(processDirectory.getAbsolutePath(), "intern");
+        internalDirectory.mkdir();
+
+        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        Step imageDeletionStep = process.getSchritte().get(1);
+        plugin.initialize(imageDeletionStep, "somewhere");
+
+        String exportName = process.getExportDirectory();
+        String importName = process.getImportDirectory();
+        String internName = internalDirectory.getAbsolutePath();
+        assertTrue(Files.exists(Paths.get(exportName)));
+        assertTrue(Files.exists(Paths.get(importName)));
+        assertTrue(Files.exists(Paths.get(internName)));
+
+        plugin.setDeleteExportDirectory(true);
+        plugin.setDeleteImportDirectory(true);
+        plugin.setDeleteProcesslogDirectory(true);
+        plugin.run();
+
+        assertFalse(Files.exists(Paths.get(exportName)));
+        assertFalse(Files.exists(Paths.get(importName)));
+        assertFalse(Files.exists(Paths.get(internName)));
+
+    }
+
+    @Test
+    public void testDeleteMetadata() throws Exception {
+        createProcessDirectory(true, true, true);
+
+        File metaXml = new File(processDirectory.getAbsolutePath(), "meta.xml");
+        metaXml.createNewFile();
+        File metaXmlBackup = new File(processDirectory.getAbsolutePath(), "meta.xml.1");
+        metaXmlBackup.createNewFile();
+        File anchorXml = new File(processDirectory.getAbsolutePath(), "meta_anchor.xml");
+        anchorXml.createNewFile();
+        File anchorXmlBackup = new File(processDirectory.getAbsolutePath(), "meta_anchor.xml.1");
+        anchorXmlBackup.createNewFile();
+
+        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        Step imageDeletionStep = process.getSchritte().get(1);
+        plugin.initialize(imageDeletionStep, "somewhere");
+
+        assertTrue(Files.exists(Paths.get(metaXml.getAbsolutePath())));
+        assertTrue(Files.exists(Paths.get(metaXmlBackup.getAbsolutePath())));
+        assertTrue(Files.exists(Paths.get(anchorXml.getAbsolutePath())));
+        assertTrue(Files.exists(Paths.get(anchorXmlBackup.getAbsolutePath())));
+
+        plugin.setDeleteMetadataFiles(true);
+        plugin.run();
+
+        assertFalse(Files.exists(Paths.get(metaXml.getAbsolutePath())));
+        assertFalse(Files.exists(Paths.get(metaXmlBackup.getAbsolutePath())));
+        assertFalse(Files.exists(Paths.get(anchorXml.getAbsolutePath())));
+        assertFalse(Files.exists(Paths.get(anchorXmlBackup.getAbsolutePath())));
+
+    }
 
     public Process getProcess() {
         Project project = new Project();

@@ -25,6 +25,18 @@
         <deleteWcDirectory>false</deleteWcDirectory>
         <deleteXmlDirectory>false</deleteXmlDirectory>
         
+        <!-- delete export folder -->
+        <deleteExportDirectory>false</deleteExportDirectory>
+        
+        <!-- delete import folder -->
+        <deleteImportDirectory>false</deleteImportDirectory>
+        
+        <!-- delete processlog folder -->
+        <deleteProcesslogDirectory>false</deleteProcesslogDirectory>
+        
+        <!-- delete metadata -->
+        <deleteMetadataFiles>false</deleteMetadataFiles>
+        
         <!-- deactivate all unfinished tasks -->
         <deactivateProcess>false</deactivateProcess>
     </config>

@@ -20,7 +20,9 @@ import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
 
 import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.Helper;
+import de.sub.goobi.helper.NIOFileUtils;
 import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
@@ -85,6 +87,19 @@ public class ImageDeletionPlugin implements IStepPluginVersion2 {
     @Setter
     private boolean deactivateProcess;
 
+    @Getter
+    @Setter
+    private boolean deleteExportDirectory;
+    @Getter
+    @Setter
+    private boolean deleteImportDirectory;
+    @Getter
+    @Setter
+    private boolean deleteMetadataFiles;
+    @Getter
+    @Setter
+    private boolean deleteProcesslogDirectory;
+
     @Override
     public void initialize(Step step, String returnPath) {
         this.step = step;
@@ -125,13 +140,19 @@ public class ImageDeletionPlugin implements IStepPluginVersion2 {
         deleteMasterDirectory = config.getBoolean("/deleteMasterDirectory", false);
         deleteSourceDirectory = config.getBoolean("/deleteSourceDirectory", false);
         deleteFallbackDirectory = config.getBoolean("/deleteFallbackDirectory", false);
-        deactivateProcess = config.getBoolean("/deactivateProcess", false);
 
         deleteAltoDirectory = config.getBoolean("/deleteAltoDirectory", false);
         deletePdfDirectory = config.getBoolean("/deleteAltoDirectory", false);
         deleteTxtDirectory = config.getBoolean("/deleteTxtDirectory", false);
         deleteWcDirectory = config.getBoolean("/deleteWcDirectory", false);
         deleteXmlDirectory = config.getBoolean("/deleteXmlDirectory", false);
+
+        deleteExportDirectory = config.getBoolean("/deleteExportDirectory", false);
+        deleteImportDirectory = config.getBoolean("/deleteImportDirectory", false);
+        deleteProcesslogDirectory = config.getBoolean("/deleteProcesslogDirectory", false);
+        deleteMetadataFiles = config.getBoolean("/deleteMetadataFiles", false);
+
+        deactivateProcess = config.getBoolean("/deactivateProcess", false);
     }
 
     @Override
@@ -233,6 +254,32 @@ public class ImageDeletionPlugin implements IStepPluginVersion2 {
                     if (StorageProvider.getInstance().isDirectory(path)) {
                         StorageProvider.getInstance().deleteDir(path);
                     }
+                }
+            }
+            if (deleteExportDirectory) {
+
+                Path path = Paths.get(process.getExportDirectory());
+                if (StorageProvider.getInstance().isDirectory(path)) {
+                    StorageProvider.getInstance().deleteDir(path);
+                }
+            }
+            if (deleteImportDirectory) {
+                Path path = Paths.get(process.getImportDirectory());
+                if (StorageProvider.getInstance().isDirectory(path)) {
+                    StorageProvider.getInstance().deleteDir(path);
+                }
+            }
+
+            if (deleteMetadataFiles) {
+                List<Path> filesInFolder = StorageProvider.getInstance().listFiles(process.getProcessDataDirectory(), NIOFileUtils.fileFilter);
+                for (Path path : filesInFolder) {
+                    StorageProvider.getInstance().deleteFile(path);
+                }
+            }
+            if (deleteProcesslogDirectory) {
+                Path path = Paths.get(process.getProcessDataDirectory(), ConfigurationHelper.getInstance().getFolderForInternalProcesslogFiles());
+                if (StorageProvider.getInstance().isDirectory(path)) {
+                    StorageProvider.getInstance().deleteDir(path);
                 }
             }
 

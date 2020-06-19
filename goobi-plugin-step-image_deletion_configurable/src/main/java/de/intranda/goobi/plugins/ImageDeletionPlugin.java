@@ -44,26 +44,42 @@ public class ImageDeletionPlugin implements IStepPluginVersion2 {
 
     @Getter
     @Setter
-    private boolean deleteAllContentFromImageFolder;
+    private boolean deleteAllContentFromImageDirectory;
     @Getter
     @Setter
-    private boolean deleteAllContentFromThumbsFolder;
+    private boolean deleteAllContentFromThumbsDirectory;
     @Getter
     @Setter
-    private boolean deleteAllContentFromOcrFolder;
+    private boolean deleteAllContentFromOcrDirectory;
 
     @Getter
     @Setter
-    private boolean deleteMediaFolder;
+    private boolean deleteMediaDirectory;
     @Getter
     @Setter
-    private boolean deleteMasterFolder;
+    private boolean deleteMasterDirectory;
     @Getter
     @Setter
-    private boolean deleteSourceFolder;
+    private boolean deleteSourceDirectory;
     @Getter
     @Setter
-    private boolean deleteFallbackFolder;
+    private boolean deleteFallbackDirectory;
+
+    @Getter
+    @Setter
+    private boolean deleteAltoDirectory;
+    @Getter
+    @Setter
+    private boolean deletePdfDirectory;
+    @Getter
+    @Setter
+    private boolean deleteTxtDirectory;
+    @Getter
+    @Setter
+    private boolean deleteWcDirectory;
+    @Getter
+    @Setter
+    private boolean deleteXmlDirectory;
 
     @Getter
     @Setter
@@ -102,14 +118,20 @@ public class ImageDeletionPlugin implements IStepPluginVersion2 {
             }
         }
 
-        deleteAllContentFromImageFolder = config.getBoolean("/deleteAllContentFromImageFolder", false);
-        deleteAllContentFromThumbsFolder = config.getBoolean("/deleteAllContentFromThumbsFolder", false);
-        deleteAllContentFromOcrFolder = config.getBoolean("/deleteAllContentFromOcrFolder", false);
-        deleteMediaFolder = config.getBoolean("/deleteMediaFolder", false);
-        deleteMasterFolder = config.getBoolean("/deleteMasterFolder", false);
-        deleteSourceFolder = config.getBoolean("/deleteSourceFolder", false);
-        deleteFallbackFolder = config.getBoolean("/deleteFallbackFolder", false);
+        deleteAllContentFromImageDirectory = config.getBoolean("/deleteAllContentFromImageDirectory", false);
+        deleteAllContentFromThumbsDirectory = config.getBoolean("/deleteAllContentFromThumbsDirectory", false);
+        deleteAllContentFromOcrDirectory = config.getBoolean("/deleteAllContentFromOcrDirectory", false);
+        deleteMediaDirectory = config.getBoolean("/deleteMediaDirectory", false);
+        deleteMasterDirectory = config.getBoolean("/deleteMasterDirectory", false);
+        deleteSourceDirectory = config.getBoolean("/deleteSourceDirectory", false);
+        deleteFallbackDirectory = config.getBoolean("/deleteFallbackDirectory", false);
         deactivateProcess = config.getBoolean("/deactivateProcess", false);
+
+        deleteAltoDirectory = config.getBoolean("/deleteAltoDirectory", false);
+        deletePdfDirectory = config.getBoolean("/deleteAltoDirectory", false);
+        deleteTxtDirectory = config.getBoolean("/deleteTxtDirectory", false);
+        deleteWcDirectory = config.getBoolean("/deleteWcDirectory", false);
+        deleteXmlDirectory = config.getBoolean("/deleteXmlDirectory", false);
     }
 
     @Override
@@ -117,10 +139,10 @@ public class ImageDeletionPlugin implements IStepPluginVersion2 {
 
         try {
             // list data in images/
-            if (deleteAllContentFromImageFolder) {
-                String imageFolderName = process.getImagesDirectory();
-                List<Path> contentOfImageFolder = StorageProvider.getInstance().listFiles(imageFolderName);
-                for (Path path : contentOfImageFolder) {
+            if (deleteAllContentFromImageDirectory) {
+                String imageDirectoryName = process.getImagesDirectory();
+                List<Path> contentOfImageDirectory = StorageProvider.getInstance().listFiles(imageDirectoryName);
+                for (Path path : contentOfImageDirectory) {
                     if (StorageProvider.getInstance().isDirectory(path)) {
                         StorageProvider.getInstance().deleteDir(path);
                     } else {
@@ -130,40 +152,40 @@ public class ImageDeletionPlugin implements IStepPluginVersion2 {
             }
 
             // list data in thumbs/
-            if (deleteAllContentFromThumbsFolder) {
-                String thumbFolderName = process.getThumbsDirectory();
-                Path thumbs = Paths.get(thumbFolderName);
+            if (deleteAllContentFromThumbsDirectory) {
+                String thumbDirectoryName = process.getThumbsDirectory();
+                Path thumbs = Paths.get(thumbDirectoryName);
                 if (StorageProvider.getInstance().isDirectory(thumbs)) {
                     StorageProvider.getInstance().deleteDir(thumbs);
                 }
             }
 
             // list data in ocr/
-            if (deleteAllContentFromOcrFolder) {
-                String orcFolderName = process.getOcrDirectory();
-                Path ocr = Paths.get(orcFolderName);
+            if (deleteAllContentFromOcrDirectory) {
+                String orcDirectoryName = process.getOcrDirectory();
+                Path ocr = Paths.get(orcDirectoryName);
                 if (StorageProvider.getInstance().isDirectory(ocr)) {
                     StorageProvider.getInstance().deleteDir(ocr);
                 }
             }
             // or delete single directories
-            if (!deleteAllContentFromImageFolder) {
+            if (!deleteAllContentFromImageDirectory) {
                 //                master
-                if (deleteMasterFolder) {
+                if (deleteMasterDirectory) {
                     Path path = Paths.get(process.getImagesOrigDirectory(false));
                     if (StorageProvider.getInstance().isDirectory(path)) {
                         StorageProvider.getInstance().deleteDir(path);
                     }
                 }
                 //                media
-                if (deleteMediaFolder) {
+                if (deleteMediaDirectory) {
                     Path path = Paths.get(process.getImagesTifDirectory(false));
                     if (StorageProvider.getInstance().isDirectory(path)) {
                         StorageProvider.getInstance().deleteDir(path);
                     }
                 }
                 //                fallback image folder
-                if (deleteFallbackFolder) {
+                if (deleteFallbackDirectory) {
                     Path path = Paths.get(process.getImagesTifDirectory(true));
                     if (StorageProvider.getInstance().isDirectory(path)) {
                         StorageProvider.getInstance().deleteDir(path);
@@ -171,8 +193,43 @@ public class ImageDeletionPlugin implements IStepPluginVersion2 {
                 }
 
                 //                source
-                if (deleteSourceFolder) {
+                if (deleteSourceDirectory) {
                     Path path = Paths.get(process.getSourceDirectory());
+                    if (StorageProvider.getInstance().isDirectory(path)) {
+                        StorageProvider.getInstance().deleteDir(path);
+                    }
+                }
+            }
+            if (!deleteAllContentFromOcrDirectory) {
+                if (deleteAltoDirectory) {
+                    Path path = Paths.get(process.getOcrAltoDirectory());
+                    if (StorageProvider.getInstance().isDirectory(path)) {
+                        StorageProvider.getInstance().deleteDir(path);
+                    }
+                }
+                if (deletePdfDirectory) {
+                    Path path = Paths.get(process.getOcrPdfDirectory());
+                    if (StorageProvider.getInstance().isDirectory(path)) {
+                        StorageProvider.getInstance().deleteDir(path);
+                    }
+                }
+
+                if (deleteTxtDirectory) {
+                    Path path = Paths.get(process.getOcrTxtDirectory());
+                    if (StorageProvider.getInstance().isDirectory(path)) {
+                        StorageProvider.getInstance().deleteDir(path);
+                    }
+                }
+
+                if (deleteWcDirectory) {
+                    Path path = Paths.get(process.getOcrWcDirectory());
+                    if (StorageProvider.getInstance().isDirectory(path)) {
+                        StorageProvider.getInstance().deleteDir(path);
+                    }
+                }
+
+                if (deleteXmlDirectory) {
+                    Path path = Paths.get(process.getOcrXmlDirectory());
                     if (StorageProvider.getInstance().isDirectory(path)) {
                         StorageProvider.getInstance().deleteDir(path);
                     }

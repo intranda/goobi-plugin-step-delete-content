@@ -43,16 +43,16 @@ public class ImageDeletionPluginTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-    private File processFolder;
-    private File metadataFolder;
+    private File processDirectory;
+    private File metadataDirectory;
     private Process process;
 
     @Before
     public void setUp() throws Exception {
-        metadataFolder = folder.newFolder("metadata");
-        processFolder = new File(metadataFolder + File.separator + "1");
-        processFolder.mkdirs();
-        String metadataFolderName = metadataFolder.getAbsolutePath() + File.separator;
+        metadataDirectory = folder.newFolder("metadata");
+        processDirectory = new File(metadataDirectory + File.separator + "1");
+        processDirectory.mkdirs();
+        String metadataDirectoryName = metadataDirectory.getAbsolutePath() + File.separator;
 
         XMLConfiguration config = getConfig();
         PowerMock.mockStatic(ConfigPlugins.class);
@@ -71,7 +71,7 @@ public class ImageDeletionPluginTest {
         EasyMock.expect(configurationHelper.getMediaDirectorySuffix()).andReturn("media").anyTimes();
         EasyMock.expect(configurationHelper.getMasterDirectoryPrefix()).andReturn("master").anyTimes();
 
-        EasyMock.expect(configurationHelper.getMetadataFolder()).andReturn(metadataFolderName).anyTimes();
+        EasyMock.expect(configurationHelper.getMetadataFolder()).andReturn(metadataDirectoryName).anyTimes();
 
         EasyMock.expect(configurationHelper.getScriptCreateDirMeta()).andReturn("").anyTimes();
         EasyMock.replay(configurationHelper);
@@ -86,44 +86,44 @@ public class ImageDeletionPluginTest {
 
     }
 
-    private void createProcessFolder(boolean createSourceFolder, boolean createThumbsFolder, boolean createOcrFolder) throws IOException {
+    private void createProcessDirectory(boolean createSourceDirectory, boolean createThumbsDirectory, boolean createOcrDirectory) throws IOException {
 
         // image folder
-        File imageFolder = new File(processFolder.getAbsolutePath(), "images");
-        imageFolder.mkdir();
+        File imageDirectory = new File(processDirectory.getAbsolutePath(), "images");
+        imageDirectory.mkdir();
         // master folder
-        File masterFolder = new File(imageFolder.getAbsolutePath(), "master_fixture_media");
-        masterFolder.mkdir();
-        File masterImageFile = new File(masterFolder.getAbsolutePath(), "0001.tif");
+        File masterDirectory = new File(imageDirectory.getAbsolutePath(), "master_fixture_media");
+        masterDirectory.mkdir();
+        File masterImageFile = new File(masterDirectory.getAbsolutePath(), "0001.tif");
         masterImageFile.createNewFile();
         // media folder
-        File mediaFolder = new File(imageFolder.getAbsolutePath(), "fixture_media");
-        mediaFolder.mkdir();
-        File mediaImageFile = new File(mediaFolder.getAbsolutePath(), "0001.tif");
+        File mediaDirectory = new File(imageDirectory.getAbsolutePath(), "fixture_media");
+        mediaDirectory.mkdir();
+        File mediaImageFile = new File(mediaDirectory.getAbsolutePath(), "0001.tif");
         mediaImageFile.createNewFile();
-        if (createSourceFolder) {
+        if (createSourceDirectory) {
             // source folder
-            File sourceFolder = new File(imageFolder.getAbsolutePath(), "fixture_source");
-            sourceFolder.mkdir();
-            File sourceFile = new File(sourceFolder.getAbsolutePath(), "fixture.zip");
+            File sourceDirectory = new File(imageDirectory.getAbsolutePath(), "fixture_source");
+            sourceDirectory.mkdir();
+            File sourceFile = new File(sourceDirectory.getAbsolutePath(), "fixture.zip");
             sourceFile.createNewFile();
         }
         // thumbs
-        if (createThumbsFolder) {
-            File thumbsFolder = new File(processFolder.getAbsolutePath(), "thumbs");
-            thumbsFolder.mkdir();
-            File thumbsMediaFolder = new File(thumbsFolder.getAbsolutePath(), "fixture_media_800");
-            thumbsMediaFolder.mkdir();
-            File thumbsImageFile = new File(thumbsMediaFolder.getAbsolutePath(), "0001.tif");
+        if (createThumbsDirectory) {
+            File thumbsDirectory = new File(processDirectory.getAbsolutePath(), "thumbs");
+            thumbsDirectory.mkdir();
+            File thumbsMediaDirectory = new File(thumbsDirectory.getAbsolutePath(), "fixture_media_800");
+            thumbsMediaDirectory.mkdir();
+            File thumbsImageFile = new File(thumbsMediaDirectory.getAbsolutePath(), "0001.tif");
             thumbsImageFile.createNewFile();
         }
         // ocr
-        if (createOcrFolder) {
-            File ocr = new File(processFolder.getAbsolutePath(), "ocr");
+        if (createOcrDirectory) {
+            File ocr = new File(processDirectory.getAbsolutePath(), "ocr");
             ocr.mkdir();
-            File altoFolder = new File(ocr.getAbsolutePath(), "fixture_alto");
-            altoFolder.mkdir();
-            File altoFile = new File(altoFolder.getAbsolutePath(), "0001.xml");
+            File altoDirectory = new File(ocr.getAbsolutePath(), "fixture_alto");
+            altoDirectory.mkdir();
+            File altoFile = new File(altoDirectory.getAbsolutePath(), "0001.xml");
             altoFile.createNewFile();
         }
     }
@@ -145,129 +145,187 @@ public class ImageDeletionPluginTest {
         assertEquals(imageDeletionStep.getTitel(), plugin.getStep().getTitel());
 
         // test config
-        assertEquals(false, plugin.isDeleteAllContentFromImageFolder());
-        assertEquals(false, plugin.isDeleteAllContentFromOcrFolder());
-        assertEquals(false, plugin.isDeleteAllContentFromThumbsFolder());
+        assertEquals(false, plugin.isDeleteAllContentFromImageDirectory());
+        assertEquals(false, plugin.isDeleteAllContentFromOcrDirectory());
+        assertEquals(false, plugin.isDeleteAllContentFromThumbsDirectory());
 
-        assertEquals(false, plugin.isDeleteFallbackFolder());
-        assertEquals(false, plugin.isDeleteMasterFolder());
-        assertEquals(false, plugin.isDeleteMediaFolder());
-        assertEquals(false, plugin.isDeleteSourceFolder());
+        assertEquals(false, plugin.isDeleteFallbackDirectory());
+        assertEquals(false, plugin.isDeleteMasterDirectory());
+        assertEquals(false, plugin.isDeleteMediaDirectory());
+        assertEquals(false, plugin.isDeleteSourceDirectory());
 
         assertEquals(false, plugin.isDeactivateProcess());
     }
 
     @Test
     public void testDeleteNothing() throws Exception {
-        createProcessFolder(true, true, true);
+        createProcessDirectory(true, true, true);
 
         ImageDeletionPlugin plugin = new ImageDeletionPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
         plugin.run();
-        String masterFolder = process.getImagesOrigDirectory(false);
-        String mediaFolder = process.getImagesTifDirectory(false);
-        String sourceFolder = process.getSourceDirectory();
-        String thumbsFolder = process.getThumbsDirectory();
-        String altoFolder = process.getOcrAltoDirectory();
-        assertTrue(Files.exists(Paths.get(masterFolder)));
-        assertTrue(Files.exists(Paths.get(mediaFolder)));
-        assertTrue(Files.exists(Paths.get(sourceFolder)));
-        assertTrue(Files.exists(Paths.get(thumbsFolder)));
-        assertTrue(Files.exists(Paths.get(altoFolder)));
+        String masterDirectory = process.getImagesOrigDirectory(false);
+        String mediaDirectory = process.getImagesTifDirectory(false);
+        String sourceDirectory = process.getSourceDirectory();
+        String thumbsDirectory = process.getThumbsDirectory();
+        String altoDirectory = process.getOcrAltoDirectory();
+        assertTrue(Files.exists(Paths.get(masterDirectory)));
+        assertTrue(Files.exists(Paths.get(mediaDirectory)));
+        assertTrue(Files.exists(Paths.get(sourceDirectory)));
+        assertTrue(Files.exists(Paths.get(thumbsDirectory)));
+        assertTrue(Files.exists(Paths.get(altoDirectory)));
     }
 
     @Test
     public void testDeleteAllFiles() throws Exception {
-        createProcessFolder(true, true, true);
+        createProcessDirectory(true, true, true);
 
         ImageDeletionPlugin plugin = new ImageDeletionPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
 
-        String masterFolder = process.getImagesOrigDirectory(false);
-        String mediaFolder = process.getImagesTifDirectory(false);
-        String sourceFolder = process.getSourceDirectory();
-        String thumbsFolder = process.getThumbsDirectory();
-        String altoFolder = process.getOcrAltoDirectory();
-        assertTrue(Files.exists(Paths.get(masterFolder)));
-        assertTrue(Files.exists(Paths.get(mediaFolder)));
-        assertTrue(Files.exists(Paths.get(sourceFolder)));
-        assertTrue(Files.exists(Paths.get(thumbsFolder)));
-        assertTrue(Files.exists(Paths.get(altoFolder)));
+        String masterDirectory = process.getImagesOrigDirectory(false);
+        String mediaDirectory = process.getImagesTifDirectory(false);
+        String sourceDirectory = process.getSourceDirectory();
+        String thumbsDirectory = process.getThumbsDirectory();
+        String altoDirectory = process.getOcrAltoDirectory();
+        assertTrue(Files.exists(Paths.get(masterDirectory)));
+        assertTrue(Files.exists(Paths.get(mediaDirectory)));
+        assertTrue(Files.exists(Paths.get(sourceDirectory)));
+        assertTrue(Files.exists(Paths.get(thumbsDirectory)));
+        assertTrue(Files.exists(Paths.get(altoDirectory)));
 
-        plugin.setDeleteAllContentFromImageFolder(true);
-        plugin.setDeleteAllContentFromOcrFolder(true);
-        plugin.setDeleteAllContentFromThumbsFolder(true);
+        plugin.setDeleteAllContentFromImageDirectory(true);
+        plugin.setDeleteAllContentFromOcrDirectory(true);
+        plugin.setDeleteAllContentFromThumbsDirectory(true);
         plugin.run();
 
-        assertFalse(Files.exists(Paths.get(masterFolder)));
-        assertFalse(Files.exists(Paths.get(mediaFolder)));
-        assertFalse(Files.exists(Paths.get(sourceFolder)));
-        assertFalse(Files.exists(Paths.get(thumbsFolder)));
-        assertFalse(Files.exists(Paths.get(altoFolder)));
+        assertFalse(Files.exists(Paths.get(masterDirectory)));
+        assertFalse(Files.exists(Paths.get(mediaDirectory)));
+        assertFalse(Files.exists(Paths.get(sourceDirectory)));
+        assertFalse(Files.exists(Paths.get(thumbsDirectory)));
+        assertFalse(Files.exists(Paths.get(altoDirectory)));
     }
 
 
     @Test
-    public void testDeleteAllImagesFolder() throws Exception {
-        createProcessFolder(true, true, true);
+    public void testDeleteAllImagesDirectory() throws Exception {
+        createProcessDirectory(true, true, true);
 
         ImageDeletionPlugin plugin = new ImageDeletionPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
 
-        String masterFolder = process.getImagesOrigDirectory(false);
-        String mediaFolder = process.getImagesTifDirectory(false);
-        String sourceFolder = process.getSourceDirectory();
-        String thumbsFolder = process.getThumbsDirectory();
-        String altoFolder = process.getOcrAltoDirectory();
-        assertTrue(Files.exists(Paths.get(masterFolder)));
-        assertTrue(Files.exists(Paths.get(mediaFolder)));
-        assertTrue(Files.exists(Paths.get(sourceFolder)));
-        assertTrue(Files.exists(Paths.get(thumbsFolder)));
-        assertTrue(Files.exists(Paths.get(altoFolder)));
+        String masterDirectory = process.getImagesOrigDirectory(false);
+        String mediaDirectory = process.getImagesTifDirectory(false);
+        String sourceDirectory = process.getSourceDirectory();
+        String thumbsDirectory = process.getThumbsDirectory();
+        String altoDirectory = process.getOcrAltoDirectory();
+        assertTrue(Files.exists(Paths.get(masterDirectory)));
+        assertTrue(Files.exists(Paths.get(mediaDirectory)));
+        assertTrue(Files.exists(Paths.get(sourceDirectory)));
+        assertTrue(Files.exists(Paths.get(thumbsDirectory)));
+        assertTrue(Files.exists(Paths.get(altoDirectory)));
 
-        plugin.setDeleteAllContentFromImageFolder(true);
-        plugin.setDeleteAllContentFromOcrFolder(false);
-        plugin.setDeleteAllContentFromThumbsFolder(false);
+        plugin.setDeleteAllContentFromImageDirectory(true);
+        plugin.setDeleteAllContentFromOcrDirectory(false);
+        plugin.setDeleteAllContentFromThumbsDirectory(false);
         plugin.run();
 
-        assertFalse(Files.exists(Paths.get(masterFolder)));
-        assertFalse(Files.exists(Paths.get(mediaFolder)));
-        assertFalse(Files.exists(Paths.get(sourceFolder)));
-        assertTrue(Files.exists(Paths.get(thumbsFolder)));
-        assertTrue(Files.exists(Paths.get(altoFolder)));
+        assertFalse(Files.exists(Paths.get(masterDirectory)));
+        assertFalse(Files.exists(Paths.get(mediaDirectory)));
+        assertFalse(Files.exists(Paths.get(sourceDirectory)));
+        assertTrue(Files.exists(Paths.get(thumbsDirectory)));
+        assertTrue(Files.exists(Paths.get(altoDirectory)));
     }
 
 
     @Test
-    public void testDeleteMasterFolder() throws Exception {
-        createProcessFolder(true, true, true);
+    public void testDeleteMasterDirectory() throws Exception {
+        createProcessDirectory(true, true, true);
 
         ImageDeletionPlugin plugin = new ImageDeletionPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
 
-        String masterFolder = process.getImagesOrigDirectory(false);
-        String mediaFolder = process.getImagesTifDirectory(false);
-        String sourceFolder = process.getSourceDirectory();
-        String thumbsFolder = process.getThumbsDirectory();
-        String altoFolder = process.getOcrAltoDirectory();
-        assertTrue(Files.exists(Paths.get(masterFolder)));
-        assertTrue(Files.exists(Paths.get(mediaFolder)));
-        assertTrue(Files.exists(Paths.get(sourceFolder)));
-        assertTrue(Files.exists(Paths.get(thumbsFolder)));
-        assertTrue(Files.exists(Paths.get(altoFolder)));
+        String masterDirectory = process.getImagesOrigDirectory(false);
+        String mediaDirectory = process.getImagesTifDirectory(false);
+        String sourceDirectory = process.getSourceDirectory();
+        String thumbsDirectory = process.getThumbsDirectory();
+        String altoDirectory = process.getOcrAltoDirectory();
+        assertTrue(Files.exists(Paths.get(masterDirectory)));
+        assertTrue(Files.exists(Paths.get(mediaDirectory)));
+        assertTrue(Files.exists(Paths.get(sourceDirectory)));
+        assertTrue(Files.exists(Paths.get(thumbsDirectory)));
+        assertTrue(Files.exists(Paths.get(altoDirectory)));
 
-        plugin.setDeleteMasterFolder(true);
+        plugin.setDeleteMasterDirectory(true);
         plugin.run();
 
-        assertFalse(Files.exists(Paths.get(masterFolder)));
-        assertTrue(Files.exists(Paths.get(mediaFolder)));
-        assertTrue(Files.exists(Paths.get(sourceFolder)));
-        assertTrue(Files.exists(Paths.get(thumbsFolder)));
-        assertTrue(Files.exists(Paths.get(altoFolder)));
+        assertFalse(Files.exists(Paths.get(masterDirectory)));
+        assertTrue(Files.exists(Paths.get(mediaDirectory)));
+        assertTrue(Files.exists(Paths.get(sourceDirectory)));
+        assertTrue(Files.exists(Paths.get(thumbsDirectory)));
+        assertTrue(Files.exists(Paths.get(altoDirectory)));
+    }
+
+    @Test
+    public void testDeleteAltoDirectory() throws Exception {
+        createProcessDirectory(true, true, true);
+
+        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        Step imageDeletionStep = process.getSchritte().get(1);
+        plugin.initialize(imageDeletionStep, "somewhere");
+
+        String masterDirectory = process.getImagesOrigDirectory(false);
+        String mediaDirectory = process.getImagesTifDirectory(false);
+        String sourceDirectory = process.getSourceDirectory();
+        String thumbsDirectory = process.getThumbsDirectory();
+        String altoDirectory = process.getOcrAltoDirectory();
+        assertTrue(Files.exists(Paths.get(masterDirectory)));
+        assertTrue(Files.exists(Paths.get(mediaDirectory)));
+        assertTrue(Files.exists(Paths.get(sourceDirectory)));
+        assertTrue(Files.exists(Paths.get(thumbsDirectory)));
+        assertTrue(Files.exists(Paths.get(altoDirectory)));
+
+        plugin.setDeleteAltoDirectory(true);
+        plugin.run();
+
+        assertTrue(Files.exists(Paths.get(masterDirectory)));
+        assertTrue(Files.exists(Paths.get(mediaDirectory)));
+        assertTrue(Files.exists(Paths.get(sourceDirectory)));
+        assertTrue(Files.exists(Paths.get(thumbsDirectory)));
+        assertFalse(Files.exists(Paths.get(altoDirectory)));
+    }
+
+    @Test
+    public void testDeleteNonExistingDirectory() throws Exception {
+        createProcessDirectory(true, true, true);
+
+        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        Step imageDeletionStep = process.getSchritte().get(1);
+        plugin.initialize(imageDeletionStep, "somewhere");
+
+        String masterDirectory = process.getImagesOrigDirectory(false);
+        String mediaDirectory = process.getImagesTifDirectory(false);
+        String sourceDirectory = process.getSourceDirectory();
+        String thumbsDirectory = process.getThumbsDirectory();
+        String altoDirectory = process.getOcrAltoDirectory();
+        assertTrue(Files.exists(Paths.get(masterDirectory)));
+        assertTrue(Files.exists(Paths.get(mediaDirectory)));
+        assertTrue(Files.exists(Paths.get(sourceDirectory)));
+        assertTrue(Files.exists(Paths.get(thumbsDirectory)));
+        assertTrue(Files.exists(Paths.get(altoDirectory)));
+
+        plugin.setDeletePdfDirectory(true);
+        plugin.run();
+
+        assertTrue(Files.exists(Paths.get(masterDirectory)));
+        assertTrue(Files.exists(Paths.get(mediaDirectory)));
+        assertTrue(Files.exists(Paths.get(sourceDirectory)));
+        assertTrue(Files.exists(Paths.get(thumbsDirectory)));
+        assertTrue(Files.exists(Paths.get(altoDirectory)));
     }
 
     @Test

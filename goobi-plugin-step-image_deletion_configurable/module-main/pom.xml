@@ -4,7 +4,7 @@
 	<artifactId>goobi-plugin-step-image_deletion_configurable-main</artifactId>
 	<version>1.0.0</version>
 	<properties>
-		<jar.name>plugin_intranda_step_image_deletion_configurablen</jar.name>
+		<jar.name>plugin_intranda_step_image_deletion</jar.name>
 		<dest.folder>/opt/digiverso/goobi/plugins/step/</dest.folder>
 	</properties>
 	<parent>

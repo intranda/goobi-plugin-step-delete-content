@@ -68,8 +68,15 @@ public class ImageDeletionPluginTest {
         EasyMock.expect(configurationHelper.isUseMasterDirectory()).andReturn(true).anyTimes();
         EasyMock.expect(configurationHelper.isCreateMasterDirectory()).andReturn(false).anyTimes();
         EasyMock.expect(configurationHelper.isCreateSourceFolder()).andReturn(false).anyTimes();
-        EasyMock.expect(configurationHelper.getMediaDirectorySuffix()).andReturn("media").anyTimes();
-        EasyMock.expect(configurationHelper.getMasterDirectoryPrefix()).andReturn("master").anyTimes();
+        EasyMock.expect(configurationHelper.getProcessImagesMasterDirectoryName()).andReturn("master_fixture_media").anyTimes();
+        EasyMock.expect(configurationHelper.getProcessImagesMainDirectoryName()).andReturn("fixture_media").anyTimes();
+        EasyMock.expect(configurationHelper.getProcessImagesSourceDirectoryName()).andReturn("fixture_source").anyTimes();
+
+        EasyMock.expect(configurationHelper.getProcessOcrAltoDirectoryName()).andReturn("fixture_alto").anyTimes();
+        EasyMock.expect(configurationHelper.getProcessOcrPdfDirectoryName()).andReturn("fixture_pdf").anyTimes();
+        EasyMock.expect(configurationHelper.getProcessExportDirectoryName()).andReturn("export").anyTimes();
+        EasyMock.expect(configurationHelper.getProcessImportDirectoryName()).andReturn("import").anyTimes();
+
         EasyMock.expect(configurationHelper.getFolderForInternalProcesslogFiles()).andReturn("intern").anyTimes();
         EasyMock.expect(configurationHelper.getMetadataFolder()).andReturn(metadataDirectoryName).anyTimes();
 
@@ -409,6 +416,7 @@ public class ImageDeletionPluginTest {
     public Process getProcess() {
         Project project = new Project();
         project.setTitel("projectName");
+        project.setId(1);
 
         Process process = new Process();
         process.setTitel("fixture");

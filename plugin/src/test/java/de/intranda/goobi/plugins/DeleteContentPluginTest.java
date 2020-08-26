@@ -39,7 +39,7 @@ import de.sub.goobi.persistence.managers.StepManager;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ConfigPlugins.class, StepManager.class, ConfigurationHelper.class, ProcessManager.class, PropertyManager.class })
 @PowerMockIgnore({ "javax.management.*" })
-public class ImageDeletionPluginTest {
+public class DeleteContentPluginTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
@@ -137,7 +137,7 @@ public class ImageDeletionPluginTest {
 
     @Test
     public void testConstructor() {
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         assertNotNull(plugin);
     }
 
@@ -146,7 +146,7 @@ public class ImageDeletionPluginTest {
 
         Step imageDeletionStep = process.getSchritte().get(1);
 
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         plugin.initialize(imageDeletionStep, "somewhere");
 
         assertEquals(imageDeletionStep.getTitel(), plugin.getStep().getTitel());
@@ -168,7 +168,7 @@ public class ImageDeletionPluginTest {
     public void testDeleteNothing() throws Exception {
         createProcessDirectory(true, true, true);
 
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
         plugin.run();
@@ -188,7 +188,7 @@ public class ImageDeletionPluginTest {
     public void testDeleteAllFiles() throws Exception {
         createProcessDirectory(true, true, true);
 
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
 
@@ -219,7 +219,7 @@ public class ImageDeletionPluginTest {
     public void testDeleteAllImagesDirectory() throws Exception {
         createProcessDirectory(true, true, true);
 
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
 
@@ -250,7 +250,7 @@ public class ImageDeletionPluginTest {
     public void testDeleteMasterDirectory() throws Exception {
         createProcessDirectory(true, true, true);
 
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
 
@@ -279,7 +279,7 @@ public class ImageDeletionPluginTest {
     public void testDeleteAltoDirectory() throws Exception {
         createProcessDirectory(true, true, true);
 
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
 
@@ -308,7 +308,7 @@ public class ImageDeletionPluginTest {
     public void testDeleteNonExistingDirectory() throws Exception {
         createProcessDirectory(true, true, true);
 
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
 
@@ -335,7 +335,7 @@ public class ImageDeletionPluginTest {
 
     @Test
     public void testDeactivateProcess() throws Exception {
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
         Step stepToDeactivate = process.getSchritte().get(2);
@@ -359,7 +359,7 @@ public class ImageDeletionPluginTest {
         File internalDirectory = new File(processDirectory.getAbsolutePath(), "intern");
         internalDirectory.mkdir();
 
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
 
@@ -394,7 +394,7 @@ public class ImageDeletionPluginTest {
         File anchorXmlBackup = new File(processDirectory.getAbsolutePath(), "meta_anchor.xml.1");
         anchorXmlBackup.createNewFile();
 
-        ImageDeletionPlugin plugin = new ImageDeletionPlugin();
+        DeleteContentPlugin plugin = new DeleteContentPlugin();
         Step imageDeletionStep = process.getSchritte().get(1);
         plugin.initialize(imageDeletionStep, "somewhere");
 

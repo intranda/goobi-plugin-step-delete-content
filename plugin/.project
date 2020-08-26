@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>goobi-plugin-step-image_deletion_configurable</name>
+	<name>goobi-plugin-step-deleteContent</name>
 	<comment></comment>
 	<projects>
 	</projects>

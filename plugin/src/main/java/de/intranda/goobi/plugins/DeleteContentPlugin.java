@@ -6,9 +6,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.apache.commons.configuration.SubnodeConfiguration;
 import org.goobi.beans.LogEntry;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
@@ -35,14 +33,14 @@ import net.xeoh.plugins.base.annotations.PluginImplementation;
 
 @PluginImplementation
 @Log4j2
-public class ImageDeletionPlugin implements IStepPluginVersion2 {
+public class DeleteContentPlugin implements IStepPluginVersion2 {
 
     @Getter
     private Step step;
     private Process process;
 
     @Getter
-    private String title = "intranda_step_imagedeletion";
+    private String title = "intranda_step_deleteContent";
 
     @Getter
     @Setter
@@ -109,30 +107,8 @@ public class ImageDeletionPlugin implements IStepPluginVersion2 {
     }
 
     private void readConfiguration(String projectName, String stepName) {
-
-        HierarchicalConfiguration config = null;
-        XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
-        xmlConfig.setExpressionEngine(new XPathExpressionEngine());
-
-        // order of configuration is:
-        //        1.) project name and step name matches
-        //        2.) step name matches and project is *
-        //        3.) project name matches and step name is *
-        //        4.) project name and step name are *
-        try {
-            config = xmlConfig.configurationAt("//config[./project = '" + projectName + "'][./step = '" + stepName + "']");
-        } catch (IllegalArgumentException e) {
-            try {
-                config = xmlConfig.configurationAt("//config[./project = '*'][./step = '" + stepName + "']");
-            } catch (IllegalArgumentException e1) {
-                try {
-                    config = xmlConfig.configurationAt("//config[./project = '" + projectName + "'][./step = '*']");
-                } catch (IllegalArgumentException e2) {
-                    config = xmlConfig.configurationAt("//config[./project = '*'][./step = '*']");
-                }
-            }
-        }
-
+        SubnodeConfiguration config = ConfigPlugins.getProjectAndStepConfig(title, step);
+        
         deleteAllContentFromImageDirectory = config.getBoolean("/deleteAllContentFromImageDirectory", false);
         deleteAllContentFromThumbsDirectory = config.getBoolean("/deleteAllContentFromThumbsDirectory", false);
         deleteAllContentFromOcrDirectory = config.getBoolean("/deleteAllContentFromOcrDirectory", false);

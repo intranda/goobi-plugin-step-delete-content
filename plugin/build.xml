@@ -1,8 +1,8 @@
-<project name="goobi-plugin-controlling-sudan" default="devbuild">
+<project name="goobi-plugin-step-deleteContent" default="devbuild">
 	<target name="devbuild">
 		<exec executable="mvn">
 			<arg value="package"/>
 		</exec>
-		<copy file="module-main/target/plugin_intranda_step_image_deletion.jar" todir="/opt/digiverso/goobi/plugins/step/"/>
+		<copy file="module-main/target/plugin_intranda_step_deleteContent.jar" todir="/opt/digiverso/goobi/plugins/step/"/>
 	</target>
 </project>

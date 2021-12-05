@@ -39,5 +39,15 @@
         
         <!-- deactivate all unfinished tasks -->
         <deactivateProcess>false</deactivateProcess>
+        
+        <!-- delete specific metadata in the structure main object (e.g. Monograph or Volume) 
+             use the internal ruleset name here, e.g. singleDigCollection, DocLanguage etc. 
+             this field is repeatable -->
+        <deleteMetadata name="myMetadataType"/>
+
+        <!-- delete specific process properties, e.g. Font type, Opening angle etc. 
+             this field is repeatable -->
+        <deleteProperty name="Opening angle"/>
+        
     </config>
 </config_plugin>

@@ -3,12 +3,15 @@ package de.intranda.goobi.plugins;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.goobi.beans.LogEntry;
 import org.goobi.beans.Process;
+import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
 import org.goobi.production.enums.LogType;
 import org.goobi.production.enums.PluginGuiType;
@@ -16,6 +19,7 @@ import org.goobi.production.enums.PluginReturnValue;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
+import org.goobi.production.properties.ProcessProperty;
 
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.config.ConfigurationHelper;
@@ -26,308 +30,392 @@ import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
+import de.sub.goobi.persistence.managers.PropertyManager;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
+import ugh.dl.DigitalDocument;
+import ugh.dl.DocStruct;
+import ugh.dl.Fileformat;
+import ugh.dl.Metadata;
+import ugh.dl.MetadataType;
+import ugh.dl.Prefs;
+import ugh.exceptions.PreferencesException;
+import ugh.exceptions.ReadException;
+import ugh.exceptions.WriteException;
 
 @PluginImplementation
 @Log4j2
 public class DeleteContentPlugin implements IStepPluginVersion2 {
 
-    @Getter
-    private Step step;
-    private Process process;
+	@Getter
+	private Step step;
+	private Process process;
 
-    @Getter
-    private String title = "intranda_step_deleteContent";
+	@Getter
+	private String title = "intranda_step_deleteContent";
 
-    @Getter
-    @Setter
-    private boolean deleteAllContentFromImageDirectory;
-    @Getter
-    @Setter
-    private boolean deleteAllContentFromThumbsDirectory;
-    @Getter
-    @Setter
-    private boolean deleteAllContentFromOcrDirectory;
+	@Getter
+	@Setter
+	private boolean deleteAllContentFromImageDirectory;
+	@Getter
+	@Setter
+	private boolean deleteAllContentFromThumbsDirectory;
+	@Getter
+	@Setter
+	private boolean deleteAllContentFromOcrDirectory;
 
-    @Getter
-    @Setter
-    private boolean deleteMediaDirectory;
-    @Getter
-    @Setter
-    private boolean deleteMasterDirectory;
-    @Getter
-    @Setter
-    private boolean deleteSourceDirectory;
-    @Getter
-    @Setter
-    private boolean deleteFallbackDirectory;
+	@Getter
+	@Setter
+	private boolean deleteMediaDirectory;
+	@Getter
+	@Setter
+	private boolean deleteMasterDirectory;
+	@Getter
+	@Setter
+	private boolean deleteSourceDirectory;
+	@Getter
+	@Setter
+	private boolean deleteFallbackDirectory;
 
-    @Getter
-    @Setter
-    private boolean deleteAltoDirectory;
-    @Getter
-    @Setter
-    private boolean deletePdfDirectory;
-    @Getter
-    @Setter
-    private boolean deleteTxtDirectory;
-    @Getter
-    @Setter
-    private boolean deleteWcDirectory;
-    @Getter
-    @Setter
-    private boolean deleteXmlDirectory;
+	@Getter
+	@Setter
+	private boolean deleteAltoDirectory;
+	@Getter
+	@Setter
+	private boolean deletePdfDirectory;
+	@Getter
+	@Setter
+	private boolean deleteTxtDirectory;
+	@Getter
+	@Setter
+	private boolean deleteWcDirectory;
+	@Getter
+	@Setter
+	private boolean deleteXmlDirectory;
 
-    @Getter
-    @Setter
-    private boolean deactivateProcess;
+	@Getter
+	@Setter
+	private boolean deactivateProcess;
 
-    @Getter
-    @Setter
-    private boolean deleteExportDirectory;
-    @Getter
-    @Setter
-    private boolean deleteImportDirectory;
-    @Getter
-    @Setter
-    private boolean deleteMetadataFiles;
-    @Getter
-    @Setter
-    private boolean deleteProcesslogDirectory;
+	@Getter
+	@Setter
+	private boolean deleteExportDirectory;
+	@Getter
+	@Setter
+	private boolean deleteImportDirectory;
+	@Getter
+	@Setter
+	private boolean deleteMetadataFiles;
+	@Getter
+	@Setter
+	private boolean deleteProcesslogDirectory;
 
-    @Override
-    public void initialize(Step step, String returnPath) {
-        this.step = step;
-        this.process = step.getProzess();
+	private SubnodeConfiguration config;
 
-        readConfiguration(process.getProjekt().getTitel(), step.getTitel());
-    }
+	@Override
+	public void initialize(Step step, String returnPath) {
+		this.step = step;
+		this.process = step.getProzess();
 
-    private void readConfiguration(String projectName, String stepName) {
-        SubnodeConfiguration config = ConfigPlugins.getProjectAndStepConfig(title, step);
-        
-        deleteAllContentFromImageDirectory = config.getBoolean("/deleteAllContentFromImageDirectory", false);
-        deleteAllContentFromThumbsDirectory = config.getBoolean("/deleteAllContentFromThumbsDirectory", false);
-        deleteAllContentFromOcrDirectory = config.getBoolean("/deleteAllContentFromOcrDirectory", false);
-        deleteMediaDirectory = config.getBoolean("/deleteMediaDirectory", false);
-        deleteMasterDirectory = config.getBoolean("/deleteMasterDirectory", false);
-        deleteSourceDirectory = config.getBoolean("/deleteSourceDirectory", false);
-        deleteFallbackDirectory = config.getBoolean("/deleteFallbackDirectory", false);
+		readConfiguration(process.getProjekt().getTitel(), step.getTitel());
+	}
 
-        deleteAltoDirectory = config.getBoolean("/deleteAltoDirectory", false);
-        deletePdfDirectory = config.getBoolean("/deleteAltoDirectory", false);
-        deleteTxtDirectory = config.getBoolean("/deleteTxtDirectory", false);
-        deleteWcDirectory = config.getBoolean("/deleteWcDirectory", false);
-        deleteXmlDirectory = config.getBoolean("/deleteXmlDirectory", false);
+	private void readConfiguration(String projectName, String stepName) {
+		config = ConfigPlugins.getProjectAndStepConfig(title, step);
 
-        deleteExportDirectory = config.getBoolean("/deleteExportDirectory", false);
-        deleteImportDirectory = config.getBoolean("/deleteImportDirectory", false);
-        deleteProcesslogDirectory = config.getBoolean("/deleteProcesslogDirectory", false);
-        deleteMetadataFiles = config.getBoolean("/deleteMetadataFiles", false);
+		deleteAllContentFromImageDirectory = config.getBoolean("/deleteAllContentFromImageDirectory", false);
+		deleteAllContentFromThumbsDirectory = config.getBoolean("/deleteAllContentFromThumbsDirectory", false);
+		deleteAllContentFromOcrDirectory = config.getBoolean("/deleteAllContentFromOcrDirectory", false);
+		deleteMediaDirectory = config.getBoolean("/deleteMediaDirectory", false);
+		deleteMasterDirectory = config.getBoolean("/deleteMasterDirectory", false);
+		deleteSourceDirectory = config.getBoolean("/deleteSourceDirectory", false);
+		deleteFallbackDirectory = config.getBoolean("/deleteFallbackDirectory", false);
 
-        deactivateProcess = config.getBoolean("/deactivateProcess", false);
-    }
+		deleteAltoDirectory = config.getBoolean("/deleteAltoDirectory", false);
+		deletePdfDirectory = config.getBoolean("/deleteAltoDirectory", false);
+		deleteTxtDirectory = config.getBoolean("/deleteTxtDirectory", false);
+		deleteWcDirectory = config.getBoolean("/deleteWcDirectory", false);
+		deleteXmlDirectory = config.getBoolean("/deleteXmlDirectory", false);
 
-    @Override
-    public boolean execute() {
+		deleteExportDirectory = config.getBoolean("/deleteExportDirectory", false);
+		deleteImportDirectory = config.getBoolean("/deleteImportDirectory", false);
+		deleteProcesslogDirectory = config.getBoolean("/deleteProcesslogDirectory", false);
+		deleteMetadataFiles = config.getBoolean("/deleteMetadataFiles", false);
 
-        try {
-            // list data in images/
-            if (deleteAllContentFromImageDirectory) {
-                String imageDirectoryName = process.getImagesDirectory();
-                List<Path> contentOfImageDirectory = StorageProvider.getInstance().listFiles(imageDirectoryName);
-                for (Path path : contentOfImageDirectory) {
-                    if (StorageProvider.getInstance().isDirectory(path)) {
-                        StorageProvider.getInstance().deleteDir(path);
-                    } else {
-                        StorageProvider.getInstance().deleteFile(path);
-                    }
-                }
-            }
+		deactivateProcess = config.getBoolean("/deactivateProcess", false);
+	}
 
-            // list data in thumbs/
-            if (deleteAllContentFromThumbsDirectory) {
-                String thumbDirectoryName = process.getThumbsDirectory();
-                Path thumbs = Paths.get(thumbDirectoryName);
-                if (StorageProvider.getInstance().isDirectory(thumbs)) {
-                    StorageProvider.getInstance().deleteDir(thumbs);
-                }
-            }
+	@Override
+	public boolean execute() {
 
-            // list data in ocr/
-            if (deleteAllContentFromOcrDirectory) {
-                String orcDirectoryName = process.getOcrDirectory();
-                Path ocr = Paths.get(orcDirectoryName);
-                if (StorageProvider.getInstance().isDirectory(ocr)) {
-                    StorageProvider.getInstance().deleteDir(ocr);
-                }
-            }
-            // or delete single directories
-            if (!deleteAllContentFromImageDirectory) {
-                //                master
-                if (deleteMasterDirectory) {
-                    Path path = Paths.get(process.getImagesOrigDirectory(false));
-                    if (StorageProvider.getInstance().isDirectory(path)) {
-                        StorageProvider.getInstance().deleteDir(path);
-                    }
-                }
-                //                media
-                if (deleteMediaDirectory) {
-                    Path path = Paths.get(process.getImagesTifDirectory(false));
-                    if (StorageProvider.getInstance().isDirectory(path)) {
-                        StorageProvider.getInstance().deleteDir(path);
-                    }
-                }
-                //                fallback image folder
-                if (deleteFallbackDirectory) {
-                    Path path = Paths.get(process.getImagesTifDirectory(true));
-                    if (StorageProvider.getInstance().isDirectory(path)) {
-                        StorageProvider.getInstance().deleteDir(path);
-                    }
-                }
+		try {
+			// list data in images/
+			if (deleteAllContentFromImageDirectory) {
+				String imageDirectoryName = process.getImagesDirectory();
+				List<Path> contentOfImageDirectory = StorageProvider.getInstance().listFiles(imageDirectoryName);
+				for (Path path : contentOfImageDirectory) {
+					if (StorageProvider.getInstance().isDirectory(path)) {
+						StorageProvider.getInstance().deleteDir(path);
+					} else {
+						StorageProvider.getInstance().deleteFile(path);
+					}
+				}
+			}
 
-                //                source
-                if (deleteSourceDirectory) {
-                    Path path = Paths.get(process.getSourceDirectory());
-                    if (StorageProvider.getInstance().isDirectory(path)) {
-                        StorageProvider.getInstance().deleteDir(path);
-                    }
-                }
-            }
-            if (!deleteAllContentFromOcrDirectory) {
-                if (deleteAltoDirectory) {
-                    Path path = Paths.get(process.getOcrAltoDirectory());
-                    if (StorageProvider.getInstance().isDirectory(path)) {
-                        StorageProvider.getInstance().deleteDir(path);
-                    }
-                }
-                if (deletePdfDirectory) {
-                    Path path = Paths.get(process.getOcrPdfDirectory());
-                    if (StorageProvider.getInstance().isDirectory(path)) {
-                        StorageProvider.getInstance().deleteDir(path);
-                    }
-                }
+			// list data in thumbs/
+			if (deleteAllContentFromThumbsDirectory) {
+				String thumbDirectoryName = process.getThumbsDirectory();
+				Path thumbs = Paths.get(thumbDirectoryName);
+				if (StorageProvider.getInstance().isDirectory(thumbs)) {
+					StorageProvider.getInstance().deleteDir(thumbs);
+				}
+			}
 
-                if (deleteTxtDirectory) {
-                    Path path = Paths.get(process.getOcrTxtDirectory());
-                    if (StorageProvider.getInstance().isDirectory(path)) {
-                        StorageProvider.getInstance().deleteDir(path);
-                    }
-                }
+			// list data in ocr/
+			if (deleteAllContentFromOcrDirectory) {
+				String orcDirectoryName = process.getOcrDirectory();
+				Path ocr = Paths.get(orcDirectoryName);
+				if (StorageProvider.getInstance().isDirectory(ocr)) {
+					StorageProvider.getInstance().deleteDir(ocr);
+				}
+			}
+			// or delete single directories
+			if (!deleteAllContentFromImageDirectory) {
+				// master
+				if (deleteMasterDirectory) {
+					Path path = Paths.get(process.getImagesOrigDirectory(false));
+					if (StorageProvider.getInstance().isDirectory(path)) {
+						StorageProvider.getInstance().deleteDir(path);
+					}
+				}
+				// media
+				if (deleteMediaDirectory) {
+					Path path = Paths.get(process.getImagesTifDirectory(false));
+					if (StorageProvider.getInstance().isDirectory(path)) {
+						StorageProvider.getInstance().deleteDir(path);
+					}
+				}
+				// fallback image folder
+				if (deleteFallbackDirectory) {
+					Path path = Paths.get(process.getImagesTifDirectory(true));
+					if (StorageProvider.getInstance().isDirectory(path)) {
+						StorageProvider.getInstance().deleteDir(path);
+					}
+				}
 
-                if (deleteWcDirectory) {
-                    Path path = Paths.get(process.getOcrWcDirectory());
-                    if (StorageProvider.getInstance().isDirectory(path)) {
-                        StorageProvider.getInstance().deleteDir(path);
-                    }
-                }
+				// source
+				if (deleteSourceDirectory) {
+					Path path = Paths.get(process.getSourceDirectory());
+					if (StorageProvider.getInstance().isDirectory(path)) {
+						StorageProvider.getInstance().deleteDir(path);
+					}
+				}
+			}
 
-                if (deleteXmlDirectory) {
-                    Path path = Paths.get(process.getOcrXmlDirectory());
-                    if (StorageProvider.getInstance().isDirectory(path)) {
-                        StorageProvider.getInstance().deleteDir(path);
-                    }
-                }
-            }
-            if (deleteExportDirectory) {
+			// delete content from the OCR sub-folders
+			if (!deleteAllContentFromOcrDirectory) {
+				if (deleteAltoDirectory) {
+					Path path = Paths.get(process.getOcrAltoDirectory());
+					if (StorageProvider.getInstance().isDirectory(path)) {
+						StorageProvider.getInstance().deleteDir(path);
+					}
+				}
+				if (deletePdfDirectory) {
+					Path path = Paths.get(process.getOcrPdfDirectory());
+					if (StorageProvider.getInstance().isDirectory(path)) {
+						StorageProvider.getInstance().deleteDir(path);
+					}
+				}
 
-                Path path = Paths.get(process.getExportDirectory());
-                if (StorageProvider.getInstance().isDirectory(path)) {
-                    StorageProvider.getInstance().deleteDir(path);
-                }
-            }
-            if (deleteImportDirectory) {
-                Path path = Paths.get(process.getImportDirectory());
-                if (StorageProvider.getInstance().isDirectory(path)) {
-                    StorageProvider.getInstance().deleteDir(path);
-                }
-            }
+				if (deleteTxtDirectory) {
+					Path path = Paths.get(process.getOcrTxtDirectory());
+					if (StorageProvider.getInstance().isDirectory(path)) {
+						StorageProvider.getInstance().deleteDir(path);
+					}
+				}
 
-            if (deleteMetadataFiles) {
-                List<Path> filesInFolder = StorageProvider.getInstance().listFiles(process.getProcessDataDirectory(), NIOFileUtils.fileFilter);
-                for (Path path : filesInFolder) {
-                    StorageProvider.getInstance().deleteFile(path);
-                }
-            }
-            if (deleteProcesslogDirectory) {
-                Path path = Paths.get(process.getProcessDataDirectory(), ConfigurationHelper.getInstance().getFolderForInternalProcesslogFiles());
-                if (StorageProvider.getInstance().isDirectory(path)) {
-                    StorageProvider.getInstance().deleteDir(path);
-                }
-            }
+				if (deleteWcDirectory) {
+					Path path = Paths.get(process.getOcrWcDirectory());
+					if (StorageProvider.getInstance().isDirectory(path)) {
+						StorageProvider.getInstance().deleteDir(path);
+					}
+				}
 
-        } catch (IOException | InterruptedException | SwapException | DAOException e) {
-            log.error(e);
-            Helper.setFehlerMeldung("Error during deletion", e);
-            LogEntry.build(process.getId())
-            .withContent("Error during file deletion in task " + step.getTitel() + ": " + e.getMessage())
-            .withType(LogType.ERROR)
-            .persist();
-            return false;
-        }
+				if (deleteXmlDirectory) {
+					Path path = Paths.get(process.getOcrXmlDirectory());
+					if (StorageProvider.getInstance().isDirectory(path)) {
+						StorageProvider.getInstance().deleteDir(path);
+					}
+				}
+			}
+			if (deleteExportDirectory) {
+				Path path = Paths.get(process.getExportDirectory());
+				if (StorageProvider.getInstance().isDirectory(path)) {
+					StorageProvider.getInstance().deleteDir(path);
+				}
+			}
+			if (deleteImportDirectory) {
+				Path path = Paths.get(process.getImportDirectory());
+				if (StorageProvider.getInstance().isDirectory(path)) {
+					StorageProvider.getInstance().deleteDir(path);
+				}
+			}
 
-        if (deactivateProcess) {
-            for (Step other : process.getSchritte()) {
-                if (!other.getTitel().equals(step.getTitel()) && other.getBearbeitungsstatusEnum() != StepStatus.DONE) {
-                    other.setBearbeitungsstatusEnum(StepStatus.DEACTIVATED);
-                }
-            }
-            try {
-                ProcessManager.saveProcess(process);
-            } catch (DAOException e) {
-                log.error(e);
-                Helper.setFehlerMeldung("Error process deactivation", e);
-                LogEntry.build(process.getId()).withContent("Error process deactivation: " + e.getMessage()).withType(LogType.ERROR).persist();
-                return false;
-            }
-        }
+			if (deleteMetadataFiles) {
+				List<Path> filesInFolder = StorageProvider.getInstance().listFiles(process.getProcessDataDirectory(),
+						NIOFileUtils.fileFilter);
+				for (Path path : filesInFolder) {
+					StorageProvider.getInstance().deleteFile(path);
+				}
+			}
+			if (deleteProcesslogDirectory) {
+				Path path = Paths.get(process.getProcessDataDirectory(),
+						ConfigurationHelper.getInstance().getFolderForInternalProcesslogFiles());
+				if (StorageProvider.getInstance().isDirectory(path)) {
+					StorageProvider.getInstance().deleteDir(path);
+				}
+			}
 
-        LogEntry.build(process.getId()).withContent("Files where automatically deleted in task " + step.getTitel()).withType(LogType.INFO).persist();
+		} catch (IOException | InterruptedException | SwapException | DAOException e) {
+			log.error(e);
+			Helper.setFehlerMeldung("Error during deletion", e);
+			LogEntry.build(process.getId())
+					.withContent("Error during file deletion in task " + step.getTitel() + ": " + e.getMessage())
+					.withType(LogType.ERROR).persist();
+			return false;
+		}
 
-        return true;
-    }
+		if (deactivateProcess) {
+			for (Step other : process.getSchritte()) {
+				if (!other.getTitel().equals(step.getTitel()) && other.getBearbeitungsstatusEnum() != StepStatus.DONE) {
+					other.setBearbeitungsstatusEnum(StepStatus.DEACTIVATED);
+				}
+			}
+			try {
+				ProcessManager.saveProcess(process);
+			} catch (DAOException e) {
+				log.error("Error process deactivation", e);
+				Helper.setFehlerMeldung("Error process deactivation", e);
+				LogEntry.build(process.getId()).withContent("Error process deactivation: " + e.getMessage())
+						.withType(LogType.ERROR).persist();
+				return false;
+			}
+		}
 
-    @Override
-    public String cancel() {
-        return null;
-    }
+		// delete metadata from meta.xml
+		List<HierarchicalConfiguration> mdlist = config.configurationsAt("//deleteMetadata");
+		if (mdlist != null && mdlist.size() > 0) {
+			try {
+				// open the mets file
+				Prefs prefs = step.getProzess().getRegelsatz().getPreferences();
+				Fileformat fileformat = step.getProzess().readMetadataFile();
+				DigitalDocument digitalDocument;
+				digitalDocument = fileformat.getDigitalDocument();
+				DocStruct doc = digitalDocument.getLogicalDocStruct();
+				// in case it is an anchor file use the first child as logical top
+				if (doc.getType().isAnchor()) {
+					doc = doc.getAllChildren().get(0);
+				}
+				List<Metadata> mdToDelete = new ArrayList<Metadata>();
 
-    @Override
-    public String finish() {
-        return null;
-    }
+				// iterate through all fields to delete to find the matching ones
+				for (HierarchicalConfiguration field : mdlist) {
+					String label = field.getString("@name");
+					for (Metadata m : doc.getAllMetadataByType(prefs.getMetadataTypeByName(label))) {
+						mdToDelete.add(m);
+					}
+				}
 
-    @Override
-    public HashMap<String, StepReturnValue> validate() {
-        return null;
-    }
+				// delete all metadata that matched
+				for (Metadata m : mdToDelete) {
+					doc.removeMetadata(m);
+				}
 
-    @Override
-    public PluginGuiType getPluginGuiType() {
-        return PluginGuiType.NONE;
-    }
+				// save the mets file again if there was something to delete
+				if (mdToDelete.size() > 0) {
+					process.writeMetadataFile(fileformat);
+				}
 
-    @Override
-    public String getPagePath() {
-        return null;
-    }
+			} catch (PreferencesException | ReadException | WriteException | IOException | InterruptedException
+					| SwapException | DAOException e) {
+				log.error("Error while deleting metadata from meta.xml file", e);
+				Helper.setFehlerMeldung("Error while deleting metadata from meta.xml file", e);
+				LogEntry.build(process.getId())
+						.withContent("Error while deleting metadata from meta.xml file: " + e.getMessage())
+						.withType(LogType.ERROR).persist();
+				return false;
+			}
 
-    @Override
-    public PluginType getType() {
-        return PluginType.Step;
-    }
+			// delete properties from process
+			List<HierarchicalConfiguration> proplist = config.configurationsAt("//deleteProperty");
+			if (proplist != null && proplist.size() > 0) {
+				List<Processproperty> propToDelete = new ArrayList<Processproperty>();
 
-    @Override
-    public PluginReturnValue run() {
-        return execute() == true ? PluginReturnValue.FINISH : PluginReturnValue.ERROR;
-    }
+				// iterate through all fields to delete to find the matching ones
+				for (HierarchicalConfiguration field : proplist) {
+					String label = field.getString("@name");
+					List<Processproperty> plist = PropertyManager.getProcessPropertiesForProcess(step.getProcessId());
+					for (Processproperty pp : plist) {
+						if (pp.getTitel().equals(label)) {
+							propToDelete.add(pp);
+						}
+					}
+				}
+				
+				// now delete the properties that were found
+				for (Processproperty pd : propToDelete) {
+					PropertyManager.deleteProcessProperty(pd);
+				}				
+			}
 
-    @Override
-    public int getInterfaceVersion() {
-        return 0;
-    }
+		}
+
+		LogEntry.build(process.getId()).withContent("Data was automatically deleted in task " + step.getTitel())
+				.withType(LogType.INFO).persist();
+		return true;
+
+	}
+
+	@Override
+	public String cancel() {
+		return null;
+	}
+
+	@Override
+	public String finish() {
+		return null;
+	}
+
+	@Override
+	public HashMap<String, StepReturnValue> validate() {
+		return null;
+	}
+
+	@Override
+	public PluginGuiType getPluginGuiType() {
+		return PluginGuiType.NONE;
+	}
+
+	@Override
+	public String getPagePath() {
+		return null;
+	}
+
+	@Override
+	public PluginType getType() {
+		return PluginType.Step;
+	}
+
+	@Override
+	public PluginReturnValue run() {
+		return execute() == true ? PluginReturnValue.FINISH : PluginReturnValue.ERROR;
+	}
+
+	@Override
+	public int getInterfaceVersion() {
+		return 0;
+	}
 
 }

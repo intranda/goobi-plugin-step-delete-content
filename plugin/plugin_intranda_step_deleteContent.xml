@@ -33,6 +33,9 @@
         
         <!-- delete processlog folder -->
         <deleteProcesslogDirectory>false</deleteProcesslogDirectory>
+
+        <!-- delete validation folder -->
+        <deleteValidationDirectory>false</deleteValidationDirectory>
         
         <!-- delete metadata -->
         <deleteMetadataFiles>false</deleteMetadataFiles>
@@ -48,6 +51,8 @@
         <!-- delete specific process properties, e.g. Font type, Opening angle etc. 
              this field is repeatable -->
         <deleteProperty name="Opening angle"/>
+        
+        
         
     </config>
 </config_plugin>

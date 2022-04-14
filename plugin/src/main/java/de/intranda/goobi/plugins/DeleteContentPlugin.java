@@ -110,6 +110,10 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
     @Setter
     private boolean deleteProcesslogDirectory;
 
+    @Getter
+    @Setter
+    private boolean deleteValidationDirectory;
+
     private SubnodeConfiguration config;
 
     @Override
@@ -143,6 +147,8 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
         deleteMetadataFiles = config.getBoolean("/deleteMetadataFiles", false);
 
         deactivateProcess = config.getBoolean("/deactivateProcess", false);
+
+        deleteValidationDirectory = config.getBoolean("/deleteValidationDirectory", false);
     }
 
     @Override
@@ -269,6 +275,13 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
             }
             if (deleteProcesslogDirectory) {
                 Path path = Paths.get(process.getProcessDataDirectory(), ConfigurationHelper.getInstance().getFolderForInternalProcesslogFiles());
+                if (StorageProvider.getInstance().isDirectory(path)) {
+                    StorageProvider.getInstance().deleteDir(path);
+                }
+            }
+
+            if (deleteValidationDirectory) {
+                Path path = Paths.get(process.getProcessDataDirectory(), "validation");
                 if (StorageProvider.getInstance().isDirectory(path)) {
                     StorageProvider.getInstance().deleteDir(path);
                 }

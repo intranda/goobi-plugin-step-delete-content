@@ -2,7 +2,7 @@
 
 <img src="https://goobi.io/wp-content/uploads/logo_goobi_plugin.png" align="right" style="margin:0 0 20px 20px;" alt="Plugin for Goobi workflow" width="175" height="109">
 
-This is Goobi step plugin to automatically delete configured content from a Goobi process. It does contain a configuration file which allows to define which content shall be deleted, which can be different per project and workflow step.
+This step plugin for Goobi workflow allows an automatic selective deletion of content from Goobi processes during the workflow. A configuration file allow to define which content exactly shall be deleted and which can be configured differently per project and workflow step.
 
 This is a plugin for Goobi workflow, the open source workflow tracking software for digitisation projects. More information about Goobi workflow is available under https://goobi.io. If you want to get in touch with the user community simply go to https://community.goobi.io.
 

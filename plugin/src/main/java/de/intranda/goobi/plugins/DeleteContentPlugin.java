@@ -287,7 +287,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
                 }
             }
 
-        } catch (IOException | InterruptedException | SwapException | DAOException e) {
+        } catch (IOException | SwapException | DAOException e) {
             log.error(e);
             Helper.setFehlerMeldung("Error during deletion", e);
             LogEntry.build(process.getId())
@@ -347,7 +347,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
                     process.writeMetadataFile(fileformat);
                 }
 
-            } catch (PreferencesException | ReadException | WriteException | IOException | InterruptedException | SwapException | DAOException e) {
+            } catch (PreferencesException | ReadException | WriteException | IOException | SwapException e) {
                 log.error("Error while deleting metadata from meta.xml file", e);
                 Helper.setFehlerMeldung("Error while deleting metadata from meta.xml file", e);
                 LogEntry.build(process.getId())

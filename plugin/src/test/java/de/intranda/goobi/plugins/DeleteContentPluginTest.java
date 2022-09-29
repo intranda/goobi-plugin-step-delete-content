@@ -77,7 +77,7 @@ public class DeleteContentPluginTest {
         EasyMock.expect(configurationHelper.getProcessExportDirectoryName()).andReturn("export").anyTimes();
         EasyMock.expect(configurationHelper.getProcessImportDirectoryName()).andReturn("import").anyTimes();
 
-        EasyMock.expect(configurationHelper.getFolderForInternalProcesslogFiles()).andReturn("intern").anyTimes();
+        EasyMock.expect(configurationHelper.getFolderForInternalJournalFiles()).andReturn("intern").anyTimes();
         EasyMock.expect(configurationHelper.getMetadataFolder()).andReturn(metadataDirectoryName).anyTimes();
 
         EasyMock.expect(configurationHelper.getScriptCreateDirMeta()).andReturn("").anyTimes();

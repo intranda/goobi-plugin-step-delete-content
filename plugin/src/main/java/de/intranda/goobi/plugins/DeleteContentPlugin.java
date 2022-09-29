@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
-import org.goobi.beans.LogEntry;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
@@ -274,7 +273,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
                 }
             }
             if (deleteProcesslogDirectory) {
-                Path path = Paths.get(process.getProcessDataDirectory(), ConfigurationHelper.getInstance().getFolderForInternalProcesslogFiles());
+                Path path = Paths.get(process.getProcessDataDirectory(), ConfigurationHelper.getInstance().getFolderForInternalJournalFiles());
                 if (StorageProvider.getInstance().isDirectory(path)) {
                     StorageProvider.getInstance().deleteDir(path);
                 }
@@ -290,10 +289,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
         } catch (IOException | SwapException | DAOException e) {
             log.error(e);
             Helper.setFehlerMeldung("Error during deletion", e);
-            LogEntry.build(process.getId())
-            .withContent("Error during file deletion in task " + step.getTitel() + ": " + e.getMessage())
-            .withType(LogType.ERROR)
-            .persist();
+            Helper.addMessageToProcessJournal(process.getId(), LogType.ERROR, "Error during file deletion in task " + step.getTitel() + ": " + e.getMessage());
             return false;
         }
 
@@ -308,7 +304,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
             } catch (DAOException e) {
                 log.error("Error process deactivation", e);
                 Helper.setFehlerMeldung("Error process deactivation", e);
-                LogEntry.build(process.getId()).withContent("Error process deactivation: " + e.getMessage()).withType(LogType.ERROR).persist();
+                Helper.addMessageToProcessJournal(process.getId(), LogType.ERROR, "Error process deactivation: " +  e.getMessage());
                 return false;
             }
         }
@@ -350,10 +346,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
             } catch (PreferencesException | ReadException | WriteException | IOException | SwapException e) {
                 log.error("Error while deleting metadata from meta.xml file", e);
                 Helper.setFehlerMeldung("Error while deleting metadata from meta.xml file", e);
-                LogEntry.build(process.getId())
-                .withContent("Error while deleting metadata from meta.xml file: " + e.getMessage())
-                .withType(LogType.ERROR)
-                .persist();
+                Helper.addMessageToProcessJournal(process.getId(), LogType.ERROR, "Error while deleting metadata from meta.xml file: " +  e.getMessage());
                 return false;
             }
         }
@@ -379,10 +372,8 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
                 PropertyManager.deleteProcessProperty(pd);
             }
         }
-
-        LogEntry.build(process.getId()).withContent("Data was automatically deleted in task " + step.getTitel()).withType(LogType.INFO).persist();
+        Helper.addMessageToProcessJournal(process.getId(), LogType.INFO, "Data was automatically deleted in task " + step.getTitel());
         return true;
-
     }
 
     @Override

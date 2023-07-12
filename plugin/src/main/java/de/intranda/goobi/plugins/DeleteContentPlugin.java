@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
+import org.apache.commons.lang.StringUtils;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
@@ -46,6 +48,7 @@ import ugh.exceptions.WriteException;
 @Log4j2
 public class DeleteContentPlugin implements IStepPluginVersion2 {
 
+    private static final long serialVersionUID = 5692049676387064722L;
     @Getter
     private Step step;
     private Process process;
@@ -113,6 +116,8 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
     @Setter
     private boolean deleteValidationDirectory;
 
+    private List<String> additionalImageFolder;
+
     private SubnodeConfiguration config;
 
     @Override
@@ -120,10 +125,10 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
         this.step = step;
         this.process = step.getProzess();
 
-        readConfiguration(process.getProjekt().getTitel(), step.getTitel());
+        readConfiguration();
     }
 
-    private void readConfiguration(String projectName, String stepName) {
+    private void readConfiguration( ) {
         config = ConfigPlugins.getProjectAndStepConfig(title, step);
 
         deleteAllContentFromImageDirectory = config.getBoolean("/deleteAllContentFromImageDirectory", false);
@@ -133,6 +138,8 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
         deleteMasterDirectory = config.getBoolean("/deleteMasterDirectory", false);
         deleteSourceDirectory = config.getBoolean("/deleteSourceDirectory", false);
         deleteFallbackDirectory = config.getBoolean("/deleteFallbackDirectory", false);
+
+        additionalImageFolder = Arrays.asList(config.getStringArray("/additionalFolder"));
 
         deleteAltoDirectory = config.getBoolean("/deleteAltoDirectory", false);
         deletePdfDirectory = config.getBoolean("/deleteAltoDirectory", false);
@@ -215,6 +222,20 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
                         StorageProvider.getInstance().deleteDir(path);
                     }
                 }
+                // additional image folder
+                for (String folder : additionalImageFolder) {
+                    // get configured foldername (or null, if folder is not configured)
+                    String folderName = process.getConfiguredImageFolder(folder);
+                    // check if folder is configured
+                    if (StringUtils.isNotBlank(folderName)) {
+                        Path path = Paths.get(folderName);
+                        // check if folder exists
+                        if (StorageProvider.getInstance().isDirectory(path)) {
+                            StorageProvider.getInstance().deleteDir(path);
+                        }
+
+                    }
+                }
             }
 
             // delete content from the OCR sub-folders
@@ -240,6 +261,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
                 }
 
                 if (deleteWcDirectory) {
+                    @SuppressWarnings("removal")
                     Path path = Paths.get(process.getOcrWcDirectory());
                     if (StorageProvider.getInstance().isDirectory(path)) {
                         StorageProvider.getInstance().deleteDir(path);
@@ -311,7 +333,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
 
         // delete metadata from meta.xml
         List<HierarchicalConfiguration> mdlist = config.configurationsAt("//deleteMetadata");
-        if (mdlist != null && mdlist.size() > 0) {
+        if (mdlist != null && !mdlist.isEmpty()) {
             try {
                 // open the mets file
                 Prefs prefs = step.getProzess().getRegelsatz().getPreferences();
@@ -339,7 +361,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
                 }
 
                 // save the mets file again if there was something to delete
-                if (mdToDelete.size() > 0) {
+                if (!mdToDelete.isEmpty()) {
                     process.writeMetadataFile(fileformat);
                 }
 
@@ -353,7 +375,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
 
         // delete properties from process
         List<HierarchicalConfiguration> proplist = config.configurationsAt("//deleteProperty");
-        if (proplist != null && proplist.size() > 0) {
+        if (proplist != null && !proplist.isEmpty()) {
             List<Processproperty> propToDelete = new ArrayList<>();
 
             // iterate through all fields to delete to find the matching ones
@@ -388,7 +410,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
 
     @Override
     public HashMap<String, StepReturnValue> validate() {
-        return null;
+        return null; //NOSONAR
     }
 
     @Override
@@ -408,7 +430,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
 
     @Override
     public PluginReturnValue run() {
-        return execute() == true ? PluginReturnValue.FINISH : PluginReturnValue.ERROR;
+        return execute()  ? PluginReturnValue.FINISH : PluginReturnValue.ERROR;
     }
 
     @Override

@@ -142,7 +142,7 @@ public class DeleteContentPlugin implements IStepPluginVersion2 {
         additionalImageFolder = Arrays.asList(config.getStringArray("/additionalFolder"));
 
         deleteAltoDirectory = config.getBoolean("/deleteAltoDirectory", false);
-        deletePdfDirectory = config.getBoolean("/deleteAltoDirectory", false);
+        deletePdfDirectory = config.getBoolean("/deletePdfDirectory", false);
         deleteTxtDirectory = config.getBoolean("/deleteTxtDirectory", false);
         deleteWcDirectory = config.getBoolean("/deleteWcDirectory", false);
         deleteXmlDirectory = config.getBoolean("/deleteXmlDirectory", false);

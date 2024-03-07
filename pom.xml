@@ -7,7 +7,7 @@
     <relativePath />
   </parent>
   <groupId>io.goobi.workflow.plugin</groupId>
-  <artifactId>plugin-step-goobi-plugin-step-deleteContent</artifactId>
+  <artifactId>plugin-step-delete-content</artifactId>
   <packaging>pom</packaging>
   <modules>
     <module>module-base</module>

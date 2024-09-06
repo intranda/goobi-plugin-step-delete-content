@@ -37,69 +37,12 @@ When the deletion is complete, a message is added to the process log to inform y
 ## Configuration 
 The configuration of the plugin is structured as follows:
 
-```xml
-<config_plugin>
+{{CONFIG_CONTENT}}
 
-  <config>
-      <project>*</project>
-      <step>*</step>
+{{CONFIG_DESCRIPTION_PROJECT_STEP}}
 
-      <!-- delete all data within the images/ folder -->
-      <deleteAllContentFromImageDirectory>false</deleteAllContentFromImageDirectory>
-
-      <!-- OR delete a single image folder - this is only used if deleteAllContentFromImageDirectory is set to false -->
-      <deleteMediaDirectory>false</deleteMediaDirectory>
-      <deleteMasterDirectory>false</deleteMasterDirectory>
-      <deleteSourceDirectory>false</deleteSourceDirectory>
-      <deleteFallbackDirectory>false</deleteFallbackDirectory>
-
-      <!-- delete all data within the thumbs/ folder -->
-      <deleteAllContentFromThumbsDirectory>false</deleteAllContentFromThumbsDirectory>
-
-      <!-- delete all data within the ocr/ folder -->
-      <deleteAllContentFromOcrDirectory>false</deleteAllContentFromOcrDirectory>
-
-      <!-- OR delete a single ocr folder - this is only used if deleteAllContentFromOcrDirectory is set to false -->
-      <deleteAltoDirectory>false</deleteAltoDirectory>
-      <deletePdfDirectory>false</deletePdfDirectory>
-      <deleteTxtDirectory>false</deleteTxtDirectory>
-      <deleteWcDirectory>false</deleteWcDirectory>
-      <deleteXmlDirectory>false</deleteXmlDirectory>
-
-      <!-- delete export folder -->
-      <deleteExportDirectory>false</deleteExportDirectory>
-
-      <!-- delete import folder -->
-      <deleteImportDirectory>false</deleteImportDirectory>
-
-      <!-- delete processlog folder -->
-      <deleteProcesslogDirectory>false</deleteProcesslogDirectory>
-
-      <!-- delete metadata -->
-      <deleteMetadataFiles>false</deleteMetadataFiles>
-
-      <!-- deactivate all unfinished tasks -->
-      <deactivateProcess>false</deactivateProcess>
-
-      <!-- delete specific metadata in the structure main object (e.g. Monograph or Volume) 
-        use the internal ruleset name here, e.g. singleDigCollection, DocLanguage etc. 
-        this field is repeatable -->
-      <deleteMetadata name="myMetadataType"/>
-
-      <!-- delete specific process properties, e.g. Font type, Opening angle etc. 
-        this field is repeatable -->
-      <deleteProperty name="Opening angle"/>
-  </config>
-
-</config_plugin>
-```
-
-The block `<config>` can occur repeatedly for different projects or workflow steps in order to be able to carry out different actions within different workflows. The other parameters within this configuration file have the following meanings:
-
-| Value | Description |
+| Parameter | Explanation |
 | :--- | :--- |
-| `project` | This parameter determines the project for which the current block `<config>` is to apply. The name of the project is used here. This parameter can occur several times per `<config>` block. |
-| `step` | This parameter controls for which workflow steps the block `<config>` is to apply. The name of the step is used here. This parameter can occur several times per `<config>` block. |
 | `deleteAllContentFromImageDirectory` | Specify whether to delete all data from the `images` folder. |
 | `deleteMediaDirectory` | Specify whether to delete the `media` folder. This option is not evaluated if `deleteAllContentFromImageDirectory` is enabled. |
 | `deleteMasterDirectory` | Specify whether to delete the `master` folder. This option is not evaluated if `deleteAllContentFromImageDirectory` is enabled. |

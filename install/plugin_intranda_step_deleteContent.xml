@@ -13,8 +13,8 @@
         <deleteFallbackDirectory>false</deleteFallbackDirectory>
         <!-- configure any additional folder. This folder gets deleted, if the folder name was configured in goobi_config.properties and does exist in current process -->
         <!-- 
-        <additionalFolder>jpeg</additionalFolder>
-        <additionalFolder>cropped</additionalFolder>
+        <additionalFolder>images.jpeg</additionalFolder>
+        <additionalFolder>images.cropped</additionalFolder>
         -->
         <!-- delete all data within the thumbs/ folder -->
         <deleteAllContentFromThumbsDirectory>false</deleteAllContentFromThumbsDirectory>

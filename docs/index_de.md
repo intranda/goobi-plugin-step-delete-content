@@ -3,6 +3,10 @@ title: Inhalte löschen
 identifier: intranda_step_deleteContent
 published: true
 description: Dieses Step Plugin ermöglicht das automatische selektive Löschen von Inhalten aus einem Vorgang.
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Step Plugin
 ---
 ## Einführung
 Das Plugin dient zum automatischen Löschen von Daten eines Vorgangs. Hierzu kann in einer Konfigurationsdatei sehr granular festgelegt werden, welche Daten genau gelöscht werden sollen.

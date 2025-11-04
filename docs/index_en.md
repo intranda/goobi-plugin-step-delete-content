@@ -3,6 +3,10 @@ title: Delete Content
 identifier: intranda_step_deleteContent
 published: true
 description: This step plugin allows an automatic selective deletion of content from a process.
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Step Plugin
 ---
 ## Introduction
 The plugin is used to automatically delete data from a process. For this purpose, a configuration file can be used to define very granularly which data exactly should be deleted.

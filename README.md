@@ -1,6 +1,9 @@
 # Goobi workflow Plugin: goobi-plugin-step-delete-content
 
-<img src="https://goobi.io/wp-content/uploads/logo_goobi_plugin.png" align="right" style="margin:0 0 20px 20px;" alt="Plugin for Goobi workflow" width="175" height="109">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://goobi.io/logo_goobi_workflow_dark.png">
+  <img src="https://goobi.io/logo_goobi_workflow.png" align="right" alt="Plugin for Goobi workflow" width="240" height="132" hspace="20" vspace="10">
+</picture>
 
 This Step plugin for Goobi workflow allows an automatic selective deletion of content from Goobi processes during the workflow. A configuration file allows to define which content exactly shall be deleted. This can be configured differently per project.
 
